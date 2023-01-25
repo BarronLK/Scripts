@@ -1,0 +1,53 @@
+======DOS FOR======
+FOR %variable IN (set) DO command [command-parameters] 
+    对一组文件中的每一个文件执行某个特定命令。
+FOR /R [[drive:]path] %variable IN (set) DO command [command-parameters]
+    检查以 [drive:]path 为根的目录树，指向每个目录中的 FOR 语句。
+
+批处理程序中使用 FOR 命令时，指定变量请使用 %%variable
+
+另外，FOR 变量参照的替换已被增强。你现在可以使用下列选项语法:
+     %~I          - 删除任何引号(")，扩展 %I
+     %~fI        - 将 %I 扩展到一个完全合格的路径名
+     %~dI        - 仅将 %I 扩展到一个驱动器号
+     %~pI        - 仅将 %I 扩展到一个路径
+     %~nI        - 仅将 %I 扩展到一个文件名
+     %~xI        - 仅将 %I 扩展到一个文件扩展名
+     %~sI        - 扩展的路径只含有短名
+
+可以组合修饰符来得到多重结果:
+     %~dpI       - 仅将 %I 扩展到一个驱动器号和路径
+     %~nxI       - 仅将 %I 扩展到一个文件名和扩展名
+     %~fsI       - 仅将 %I 扩展到一个带有短名的完整路径名
+
+=====================================================================
+
+======压缩码率======
+------命令解释------
+-b:v -视频比特率
+-b:a -音频比特率
+-v -不特定总比特率
+------命令------
+mkdir .\output
+for %%a in (*.*) do ffmpeg -i "%%~fa" -b:v 1m -b:a 128k "output\%%~nxa"
+
+======转换格式并压缩码率======
+for /r %%a in (*.avi) do ffmpeg -i "%%~nxa" -b:v 250k -b:a 128k "%%~na.mp4"
+
+======裁切右下黑边======
+------检测黑色区域------
+for %%a in (*.*) do ffmpeg -i "%%~fa" -vf cropdetect
+------bat命令------
+mkdir .\output
+for %%a in (*.*) do ffmpeg -i "%%~fa" -vf crop=1536:864:0:0 -acodec copy "%%~dpaoutput\%%~nxa"
+
+======输出视频图像拼贴======
+------命令解释------
+-vf "select=not(mod(n\,60)),scale=480:-1,tile=4x3:nb_frames=10"
+select='not(mod(n\,60))' -每60帧取1帧
+scale=200:-1 -按宽度200等比缩放
+tile=10x1	-取10帧合成1帧，排列顺序是 10x1
+:nb_frames=10 -选取前x帧
+------命令------
+mkdir .\output
+for %%a in (*.*) do ffmpeg -i "%%~fa" -frames:v 1 -vf "select=not(mod(n\,600)),scale=360:-1,tile=12x12" "output\%%~na.png"
