@@ -90,6 +90,7 @@ def get_picture_tile(time_in_seconds):
 
 def generate_pictures(files):
     global workdir
+    text_list = []
     
     try:
         os.mkdir('\\'.join([workdir,'VideoToPic_Output']))
@@ -112,7 +113,6 @@ def generate_pictures(files):
         sample_seconds = str(int(frames/tile_numbers))
         vf_argument = ''.join(['select=not(mod(n\,',sample_seconds,')),scale=240:-1,tile=',tile])
 
-        text_list = []
         text_list.append([outpath,int(length)])
 
         subprocess.run(['ffmpeg','-v','warning','-i',filepath,'-frames:v','1','-vf',vf_argument,outpath]) 
@@ -135,7 +135,8 @@ def draw(picpath, text, left, top, text_color=(0, 0, 0), text_size=13):
     return picture
 
 def generate_text(text_list):
-    for picture in text_list:
+    for pictureindex,picture in enumerate(text_list):
+        print('正在添加文本：',pictureindex+1,'/',len(text_list))
         video_minutes = int(picture[1]/60)
         video_seconds = picture[1]%60
         if video_minutes == 0:
