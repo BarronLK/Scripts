@@ -1,4 +1,5 @@
 #功能：遍历当前或指定文件夹下视频，依据视频时长创建内容缩略图，添加文件名及时长到图片
+#需要同文件下Dengb.ttf 129行
 import os
 import subprocess
 from PIL import Image, ImageDraw, ImageFont
