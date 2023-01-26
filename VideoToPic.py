@@ -12,6 +12,7 @@ def get_mediafiles(opt_path):
     global workdir
     if opt_path == '':
         opt_path = os.path.dirname(os.path.abspath(__file__)) #.py文件路径
+        pathcheck = True
     else:
         opt_path = os.path.abspath(opt_path) # 格式化路径
         pathcheck = os.path.exists(opt_path) # 检查路径存在性
@@ -19,7 +20,7 @@ def get_mediafiles(opt_path):
 
     for currentdir,dirnames,filenames in os.walk(opt_path):
         for eachname in filenames:
-            if os.path.splitext(eachname)[-1][1:].lower() in mediaext:
+            if os.path.splitext(eachname)[-1][1:].lower() in mediaext: #检查视频后缀名
                 filepathpack = [os.path.join(currentdir,eachname),eachname,currentdir.replace(opt_path,'',1)] #[全路径文件名，文件全名，工作目录下目录路径]
                 files.append(filepathpack)
 
@@ -93,20 +94,18 @@ def generate_pictures(files):
     text_list = []
     
     try:
-        os.mkdir('\\'.join([workdir,'VideoToPic_Output']))
+        os.mkdir(os.path.join(workdir,'VideoToPic_Output'))
     except:
         print('创建文件夹失败')
-    
+
     for fileindex,file in enumerate(files):
         print('正在处理视频：',fileindex+1,'/',len(files))
         filepath = file[0]
         filefullname = file[1] # 文件名.扩展名
-        dirpath = ''.join([file[2].lstrip('\\'),'\\']) # \\目录 → 目录\\
-        dirpath = dirpath.replace('\\','-',) # 目录-
-        if dirpath == '-':
-            dirpath = ''
-        outname = ''.join([dirpath,os.path.splitext(filefullname)[0],'.png'])
-        outpath = '\\'.join([workdir,'VideoToPic_Output',outname])
+        outname = os.path.join(file[2],''.join([os.path.splitext(filefullname)[0],'.png'])) # \\目录\\文件名
+        outname = outname.replace('\\','-') # -目录-文件名 Windows
+        outname = outname.replace('/','-') # -目录-文件名 Linux
+        outpath = os.path.join(workdir,'VideoToPic_Output',outname)
 
         frames,length = get_frames_and_length(filepath)
         tile,tile_numbers = get_picture_tile(length)
@@ -126,7 +125,7 @@ def generate_pictures(files):
 
 def draw(picpath, text, left, top, text_color=(0, 0, 0), text_size=13):
     pyfilepath = os.path.dirname(os.path.abspath(__file__))
-    fontpath = ''.join([pyfilepath,'\\','dengb.ttf']) # 需要带有ttf字体
+    fontpath = os.path.join(pyfilepath,'dengb.ttf') # 需要带有ttf字体
     fontStyle = ImageFont.truetype(fontpath, text_size, encoding="utf-8")
 
     picture = Image.open(picpath) # 创建一个可以在给定图像上绘图的对象
@@ -153,6 +152,7 @@ def generate_text(text_list):
         processed_picture2 = draw(picturepath, text, 5, 45, text_color=(255, 255, 255), text_size=35) #白
         processed_picture2.save(picturepath)
 
+print('遍历当前或指定文件夹下视频，依据视频时长创建内容缩略图，添加文件名及时长到图片')
 if input('是否添加时长及名称到缩略图？(Yy/Nn)').lower() == 'y':
     addtextbool = True
 else:
