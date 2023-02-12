@@ -26,13 +26,15 @@ FOR /R [[drive:]path] %variable IN (set) DO command [command-parameters]
 ------命令解释------
 -b:v -视频比特率
 -b:a -音频比特率
--v -不特定总比特率
+-v -总比特率
+-r -帧率
+-c:v h264_amf -指定视频编码器 GPU硬件编码
 ------命令------
 mkdir .\output
 for %%a in (*.*) do ffmpeg -i "%%~fa" -b:v 1m -b:a 128k "output\%%~nxa"
 
 ======转换格式并压缩码率======
-for /r %%a in (*.avi) do ffmpeg -i "%%~nxa" -b:v 250k -b:a 128k "%%~na.mp4"
+for /r %%a in (*.mp4) do ffmpeg -i "%%~fa" -b:v 250k -b:a 128k -r 25 "%%~dpna.mkv"
 
 ======裁切右下黑边======
 ------检测黑色区域------
@@ -41,13 +43,12 @@ for %%a in (*.*) do ffmpeg -i "%%~fa" -vf cropdetect
 mkdir .\output
 for %%a in (*.*) do ffmpeg -i "%%~fa" -vf crop=1536:864:0:0 -acodec copy "%%~dpaoutput\%%~nxa"
 
-======输出视频图像拼贴======
-------命令解释------
--vf "select=not(mod(n\,60)),scale=480:-1,tile=4x3:nb_frames=10"
-select='not(mod(n\,60))' -每60帧取1帧
-scale=200:-1 -按宽度200等比缩放
-tile=10x1	-取10帧合成1帧，排列顺序是 10x1
-:nb_frames=10 -选取前x帧
-------命令------
-mkdir .\output
-for %%a in (*.*) do ffmpeg -i "%%~fa" -frames:v 1 -vf "select=not(mod(n\,600)),scale=360:-1,tile=12x12" "output\%%~na.png"
+======下载视频======
+@echo off
+set /p var=Input the Download Link of Video File:
+ffmpeg -i %var% -c copy videoout.mp4
+
+======下载流媒体======
+@echo off
+set /p var=Input the Download Link of Stream(.m3u8):
+ffmpeg -allowed_extensions ALL -protocol_whitelist "file,http,https,tls,tcp,crypto" -i %var% -c copy streamout.mp4
